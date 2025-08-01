@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+seaborn
+statsmodels
+jax
+dataclasses
+pytest
+wheel

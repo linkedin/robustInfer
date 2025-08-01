@@ -1,0 +1,7 @@
+package robustinfer
+
+sealed trait CorrelationStructure
+case object Independent extends CorrelationStructure
+case object AR extends CorrelationStructure
+case object Exchangeable extends CorrelationStructure
+case object Unstructured extends CorrelationStructure
