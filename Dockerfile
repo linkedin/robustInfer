@@ -40,7 +40,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Step 3: Install R kernel and any R packages
 # ───────────────────────────────────────────────────────────────────────
 RUN R -e "install.packages('IRkernel', repos='http://cran.us.r-project.org')" && \
-    R -e "IRkernel::installspec(user = FALSE)"
+    R -e "IRkernel::installspec(user = FALSE)" 
 
 COPY install_r_packages.R /tmp/install_r_packages.R
 RUN Rscript /tmp/install_r_packages.R
