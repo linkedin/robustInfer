@@ -1,0 +1,43 @@
+Copyright 2019 LinkedIn Corporation
+All Rights Reserved.
+
+Licensed under the BSD 2-Clause License (the "License").  See License in the project root for license information.
+
+---
+
+# RobustInfer Open Source Dependencies
+
+---
+
+## Python Dependencies
+
+| Component | License | Purpose | Source Repository |
+|-----------|---------|---------|-------------------|
+| **numpy** | BSD-3-Clause | Numerical computing | https://github.com/numpy/numpy |
+| **pandas** | BSD-3-Clause | Data manipulation and analysis | https://github.com/pandas-dev/pandas |
+| **matplotlib** | PSF | Data visualization | https://github.com/matplotlib/matplotlib |
+| **scikit-learn** | BSD-3-Clause | Machine learning library | https://github.com/scikit-learn/scikit-learn |
+| **seaborn** | BSD-3-Clause | Statistical data visualization | https://github.com/mwaskom/seaborn |
+| **statsmodels** | BSD-3-Clause | Statistical modeling | https://github.com/statsmodels/statsmodels |
+| **jax** | Apache-2.0 | Machine learning framework | https://github.com/google/jax |
+| **pytest** | MIT | Testing framework | https://github.com/pytest-dev/pytest |
+| **wheel** | MIT | Python package format | https://github.com/pypa/wheel |
+| **jupyterlab** | BSD-3-Clause | Interactive development environment | https://github.com/jupyterlab/jupyterlab |
+| **toree** | Apache-2.0 | Scala kernel for Jupyter | https://github.com/apache/incubator-toree |
+
+---
+
+## Scala/Java Dependencies
+
+| Component | License | Purpose | Source Repository |
+|-----------|---------|---------|-------------------|
+| **scala-library** | Apache-2.0 | Scala standard library | https://github.com/scala/scala |
+| **spark-sql** | Apache-2.0 | Distributed SQL engine | https://github.com/apache/spark |
+| **spark-core** | Apache-2.0 | Distributed computing framework | https://github.com/apache/spark |
+| **breeze** | Apache-2.0 | Numerical processing library | https://github.com/scalanlp/breeze |
+| **breeze-natives** | Apache-2.0 | Native BLAS/LAPACK bindings | https://github.com/scalanlp/breeze |
+| **scalatest** | Apache-2.0 | Testing framework for Scala | https://github.com/scalatest/scalatest |
+| **scalatestplus-junit** | Apache-2.0 | JUnit integration for ScalaTest | https://github.com/scalatest/scalatestplus-junit |
+
+
+
