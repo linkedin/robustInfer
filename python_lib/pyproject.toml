@@ -1,0 +1,107 @@
+[project]
+name = "robustinfer"
+version = "0.1.0"
+description = "A Python library for robust inference"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.2.6",
+    "pandas>=2.3.1",
+    "psutil>=7.0.0",
+    "scikit-learn>=1.7.1",
+    "statsmodels>=0.14.5",
+    "torch>=2.0.0",
+]
+authors = [
+    {name = "chawei"}
+]
+license = {text = "Apache-2.0"}
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+jax = ["jax>=0.6.2"]
+all = ["jax>=0.6.2"]
+
+[dependency-groups]
+dev = [
+    "jax>=0.6.2",
+    "matplotlib>=3.10.5",
+    "pytest>=8.4.1",
+    "ruff>=0.12.9",
+    "seaborn>=0.13.2",
+    "tox>=4.28.4",
+    "wheel>=0.45.1",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/robustinfer"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+

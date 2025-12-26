@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-import numpy as np
+
 
 class EstimatingEquation(ABC):
     """
     Abstract base class for models based on estimating equations.
     Provides a structure for point estimation and variance estimation.
     """
+
     def __init__(self, data, covariates, treatment, response):
         """
         Initialize the model with data, covariates, treatment, and response.
@@ -41,7 +42,7 @@ class EstimatingEquation(ABC):
         Return the point estimates (coefficients).
         """
         if self.coefficients is None:
-            raise ValueError("Model has not been fitted yet.")
+            raise ValueError('Model has not been fitted yet.')
         return self.coefficients
 
     def get_variance_estimates(self):
@@ -49,5 +50,5 @@ class EstimatingEquation(ABC):
         Return the variance-covariance matrix of the estimates.
         """
         if self.variance_matrix is None:
-            raise ValueError("Model has not been fitted yet.")
+            raise ValueError('Model has not been fitted yet.')
         return self.variance_matrix
