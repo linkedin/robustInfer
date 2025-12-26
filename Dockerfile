@@ -29,21 +29,39 @@ RUN echo "Testing Java setup..." && \
     "$JAVA_HOME/bin/java" -version
 
 # ───────────────────────────────────────────────────────────────────────
-# Step 2: Install Jupyter (Python) + Python dependencies
+# Step 2: Install UV and Jupyter
 # ───────────────────────────────────────────────────────────────────────
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install Jupyter
 RUN pip install --no-cache-dir jupyterlab
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# ───────────────────────────────────────────────────────────────────────
+# Step 2.5: Install Python library using UV
+# ───────────────────────────────────────────────────────────────────────
+# Install at system level
+COPY python_lib /app/python_lib  
+WORKDIR /app/python_lib
+# note: this will install the project in editable mode, so any changes to the project on the image will be reflected.
+# docker image so no need to use uv sync to install to virtual environment
+RUN uv pip install --system -e . --group dev
+
+# Caveat: 
+# 1. when launching image while mounting python_lib to app folder, the mounted python_lib will override the python_lib in the image, hence the project is live reloaded.
+# 2. when launching image without mounting python_lib to app folder, the python_lib in the image will be used, hence the project is using the version when the image was built.
+
+# Switch back to main app directory
+WORKDIR /app
 
 # ───────────────────────────────────────────────────────────────────────
-# Step 3: Install R kernel and any R packages
+# Step 3: Install R kernel and any R packages (optional)
 # ───────────────────────────────────────────────────────────────────────
-RUN R -e "install.packages('IRkernel', repos='http://cran.us.r-project.org')" && \
-    R -e "IRkernel::installspec(user = FALSE)"
+# RUN R -e "install.packages('IRkernel', repos='http://cran.us.r-project.org')" && \
+#     R -e "IRkernel::installspec(user = FALSE)"
 
-COPY install_r_packages.R /tmp/install_r_packages.R
-RUN Rscript /tmp/install_r_packages.R
+# COPY install_r_packages.R /tmp/install_r_packages.R
+# RUN Rscript /tmp/install_r_packages.R
 
 # ───────────────────────────────────────────────────────────────────────
 # Step 4: Install sbt (Scala Build Tool) for Apache Toree
@@ -58,12 +76,15 @@ RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" > /etc/apt/so
 
 # ───────────────────────────────────────────────────────────────────────
 # Step 5: Download & extract Apache Spark
-#   * Adjust SPARK_VERSION and HADOOP_VERSION if needed.
+#   * Version is synced with scala_lib/gradle.properties via Makefile
 # ───────────────────────────────────────────────────────────────────────
 ARG SPARK_VERSION=3.4.1
 ARG HADOOP_VERSION=3
 ENV SPARK_HOME=/opt/spark
 ENV PATH="${SPARK_HOME}/bin:${PATH}"
+
+# Print versions for verification
+RUN echo "=== Building with Spark ${SPARK_VERSION} and Hadoop ${HADOOP_VERSION} ==="
 
 RUN wget --quiet https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
  && mkdir -p /opt \

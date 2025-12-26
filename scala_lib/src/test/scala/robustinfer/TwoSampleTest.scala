@@ -6,11 +6,12 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import robustinfer.TwoSample.{zeroTrimmedU, mwU, tTest, zeroTrimmedUDf, tTestDf}
+import robustinfer.TwoSample.{zeroTrimmedU, mwU, tTest, zeroTrimmedUDf, tTestDf, zeroTrimmedT}
 
 class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
-    // 1) shared SparkSession & Context
-  lazy val spark: SparkSession = SparkSession.builder()
+  // 1) shared SparkSession & Context
+  lazy val spark: SparkSession = SparkSession
+    .builder()
     .master("local[2]")
     .appName(this.getClass.getSimpleName)
     .config("spark.ui.enabled", "false")
@@ -43,10 +44,12 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
     val y = sc.parallelize(Seq(0.0, 3.0, 1.0, 2.0))
 
     // Without tie correction
-    val (z1, _, w1, _) = TwoSample.zeroTrimmedU(x, y, alpha = 0.05, scale = true, tieCorrection = false)
+    val (z1, _, w1, _) =
+      TwoSample.zeroTrimmedU(x, y, alpha = 0.05, scale = true, tieCorrection = false)
 
     // With tie correction
-    val (z2, _, w2, _) = TwoSample.zeroTrimmedU(x, y, alpha = 0.05, scale = true, tieCorrection = true)
+    val (z2, _, w2, _) =
+      TwoSample.zeroTrimmedU(x, y, alpha = 0.05, scale = true, tieCorrection = true)
 
     assert(z1 < z2) // adjusted z should be larger (with smaller variance)
     assert(w1 == w2) // Adjusted U should be the same
@@ -62,11 +65,11 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
     )
 
     val expectedRanks = Map(
-      (5.0, true)   -> 1.5,
-      (5.0, false)  -> 1.5,
-      (4.0, true)   -> 3.0,
-      (3.0, false)  -> 4.5,
-      (3.0, true)   -> 4.5
+      (5.0, true) -> 1.5,
+      (5.0, false) -> 1.5,
+      (4.0, true) -> 3.0,
+      (3.0, false) -> 4.5,
+      (3.0, true) -> 4.5
     )
 
     val rdd = sc.parallelize(input)
@@ -100,24 +103,28 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
 
   test("zeroTrimmedUDf on DataFrame") {
     val df = Seq(
-      ("ctl", 0.0), ("ctl", 1.0),
-      ("trt", 0.0), ("trt", 2.0)
-    ).toDF("grp","v")
+      ("ctl", 0.0),
+      ("ctl", 1.0),
+      ("trt", 0.0),
+      ("trt", 2.0)
+    ).toDF("grp", "v")
 
     val (_, p, _, _) =
-      TwoSample.zeroTrimmedUDf(df, "grp","v","ctl","trt", alpha = 0.1)
+      TwoSample.zeroTrimmedUDf(df, "grp", "v", "ctl", "trt", alpha = 0.1)
 
     p should (be >= 0.0 and be <= 1.0)
   }
 
   test("tTestDf computes expected difference") {
     val df = Seq(
-      ("a", 10.0), ("a", 20.0),
-      ("b", 30.0), ("b", 40.0)
-    ).toDF("grp","v")
+      ("a", 10.0),
+      ("a", 20.0),
+      ("b", 30.0),
+      ("b", 40.0)
+    ).toDF("grp", "v")
 
-    val (_, _, md, _) = TwoSample.tTestDf(df, "grp","v","a","b", alpha=0.05)
-    md shouldBe ( (30+40)/2.0 - (10+20)/2.0 )
+    val (_, _, md, _) = TwoSample.tTestDf(df, "grp", "v", "a", "b", alpha = 0.05)
+    md shouldBe ((30 + 40) / 2.0 - (10 + 20) / 2.0)
   }
 
   test("TwoSample tests on simulated Cauchy data (DataFrame)") {
@@ -138,7 +145,8 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
     val df = (cauchy1 ++ cauchy2).toDF("grp", "v")
 
     // Run zeroTrimmedUDf test
-    val (_, pZeroTrimmed, w, _) = TwoSample.zeroTrimmedUDf(df, "grp", "v", "grp1", "grp2", alpha = 0.05)
+    val (_, pZeroTrimmed, w, _) =
+      TwoSample.zeroTrimmedUDf(df, "grp", "v", "grp1", "grp2", alpha = 0.05)
     println(s"Zero-Trimmed U Test (DataFrame): p = $pZeroTrimmed")
     println(s"U statistic = $w")
     assert(w > 0.5, "U statistic should be more than 0.5")
@@ -170,8 +178,11 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
     val rdd2 = sc.parallelize(cauchy2)
 
     // Run ZeroTrimmedU test
-    val (z, pZeroTrimmed, wScaled, (lo, hi)) = TwoSample.zeroTrimmedU(rdd1, rdd2, alpha = 0.05, scale = true)
-    println(s"Zero-Trimmed U Test (RDD): z = $z, p = $pZeroTrimmed, wScaled = $wScaled, CI = [$lo, $hi]")
+    val (z, pZeroTrimmed, wScaled, (lo, hi)) =
+      TwoSample.zeroTrimmedU(rdd1, rdd2, alpha = 0.05, scale = true)
+    println(
+      s"Zero-Trimmed U Test (RDD): z = $z, p = $pZeroTrimmed, wScaled = $wScaled, CI = [$lo, $hi]"
+    )
     assert(pZeroTrimmed >= 0.0 && pZeroTrimmed <= 1.0, "p-value should be between 0 and 1")
     assert(wScaled > 0.5, "U statistic should be more than 0.5")
 
@@ -185,6 +196,48 @@ class TwoSampleTest extends AnyFunSuite with BeforeAndAfterAll with Matchers {
     println(s"T-Test (RDD): p = $pTTest, Mean Difference = $meanDiff")
     assert(pTTest >= 0.0 && pTTest <= 1.0, "p-value should be between 0 and 1")
   }
+
+  // ========================================================================
+  // Zero-Trimmed T-Test Unit Tests (Essential Coverage Only)
+  // ========================================================================
+
+  test("zeroTrimmedT basic functionality with mixed data") {
+    val x = sc.parallelize(Seq(0.0, 1.0, 2.0, 0.0, 3.0))
+    val y = sc.parallelize(Seq(0.0, 4.0, 5.0, 0.0, 6.0))
+
+    val (z, pValue, meanDiff, (ciLow, ciHigh)) = zeroTrimmedT(x, y, alpha = 0.05)
+
+    // Basic statistical properties
+    pValue should (be >= 0.0 and be <= 1.0)
+    assert(java.lang.Double.isFinite(z), "Z-statistic should be finite")
+    assert(ciLow <= meanDiff && ciHigh >= meanDiff, "CI should contain mean difference")
+    meanDiff should be > 0.0 // y has larger positive values
+  }
+
+  test("zeroTrimmedT handles all-zero data correctly") {
+    val x = sc.parallelize(Seq(0.0, 0.0, 0.0))
+    val y = sc.parallelize(Seq(0.0, 0.0, 0.0))
+
+    val (z, pValue, meanDiff, (ciLow, ciHigh)) = zeroTrimmedT(x, y, alpha = 0.05)
+
+    // All zeros should give specific results
+    z shouldBe 0.0
+    pValue shouldBe 1.0
+    meanDiff shouldBe 0.0
+    ciLow shouldBe 0.0
+    ciHigh shouldBe 0.0
+  }
+
+  test("zeroTrimmedT with includePiVariance parameter") {
+    val x = sc.parallelize(Seq(0.0, 1.0, 0.0, 2.0))
+    val y = sc.parallelize(Seq(0.0, 3.0, 0.0, 4.0))
+
+    val (_, p1, md1, ci1) = zeroTrimmedT(x, y, includePiVariance = false)
+    val (_, p2, md2, ci2) = zeroTrimmedT(x, y, includePiVariance = true)
+
+    // Mean difference should be the same, but CI may differ
+    md1 shouldBe md2
+    p1 should (be >= 0.0 and be <= 1.0)
+    p2 should (be >= 0.0 and be <= 1.0)
+  }
 }
-
-

@@ -15,7 +15,8 @@ See [License](LICENSE) in the project root for license information.
 ## Usage
 ### Run Notebooks from Docker
 1. Build the Docker Image:
-```docker build -t robustinfer-notebook .```
+```make docker-build``` (build with spark version synced)
+```docker build -t robustinfer-notebook .``` (build with default version)
 2. Run the Docker Container:
 ```docker run -p 8888:8888 -v $(pwd):/app robustinfer-notebook```
 The `-v $(pwd):/app` mounts the project directory into the container.

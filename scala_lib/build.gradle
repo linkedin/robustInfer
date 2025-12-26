@@ -1,5 +1,6 @@
 plugins {
     id 'scala'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'com.linkedin'
@@ -38,6 +39,12 @@ java {
   toolchain {
     languageVersion = JavaLanguageVersion.of(11)
   }
+}
+
+//Customize JAR filename to include Spark version profile
+jar {
+    archiveBaseName = "${project.name}-${versionProfile}"
+    archiveVersion = project.version
 }
 
 repositories {
@@ -92,4 +99,31 @@ test {
     systemProperty 'spark.driver.host', 'localhost'
     systemProperty 'spark.ui.enabled', 'false'
     systemProperty 'java.net.preferIPv4Stack', 'true'
+}
+
+// Spotless configuration for Scala formatting
+spotless {
+    scala {
+        target 'src/**/*.scala'
+        scalafmt('3.8.3').configFile('../.scalafmt.conf')
+    }
+}
+
+// Task aliases for convenience
+tasks.register('format') {
+    dependsOn 'spotlessApply'
+    description 'Format Scala code using scalafmt'
+}
+
+tasks.register('checkFormat') {
+    dependsOn 'spotlessCheck'
+    description 'Check Scala code formatting'
+}
+
+tasks.register('lint') {
+    dependsOn 'checkFormat'
+    description 'Lint Scala code (check formatting and compiler warnings)'
+    doLast {
+        println 'Scala linting complete. Check build output for warnings.'
+    }
 }

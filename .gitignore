@@ -20,6 +20,7 @@ env/
 *.tmp
 *.bak
 *.swp
+.tox
 
 # Build artifacts
 dist/
