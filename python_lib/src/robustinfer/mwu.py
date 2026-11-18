@@ -29,9 +29,10 @@ def zero_trimmed_u(x, y):
     # Compute ranks and statistic
     combined = np.concatenate([y_trun, x_trun])
     # Note: 1) we want descending ranks for y_trun, so we negate combined
-    #       2) we use 'ordinal' method (for rank sum this is same as 'average'),
-    #        as only one sample has zeros after truncation
-    descending_ranks = stats.rankdata(-combined, method='ordinal')
+    #       2) ties get average ranks; positive values (e.g. counts) can tie
+    #        across the two samples, and ordinal ranks would then depend on
+    #        the order of y_trun and x_trun in combined
+    descending_ranks = stats.rankdata(-combined, method='average')
     R1 = np.sum(descending_ranks[: len(y_trun)])
     # negative sign because we have negated combined
     W = -(R1 - len(y_trun) * (len(combined) + 1) / 2)

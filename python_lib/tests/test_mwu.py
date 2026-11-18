@@ -1,4 +1,6 @@
+import numpy as np
 import pytest
+from scipy import stats
 
 from robustinfer.mwu import zero_trimmed_u
 
@@ -74,3 +76,28 @@ def test_zero_trimmed_u_edge_case_negative_values():
     assert 'All values in x must be non-negative.' in str(
         excinfo.value
     ) or 'All values in y must be non-negative.' in str(excinfo.value)
+
+
+def test_zero_trimmed_u_tied_values_across_samples():
+    # Positive values that tie across the two samples must not bias W
+    d = [0, 0, 0, 1, 1, 1, 2, 2, 3, 5]
+    W, var_W, p_value = zero_trimmed_u(d, d)
+    assert W == 0
+    assert p_value == 1.0
+
+    # Swapping the samples flips the sign of W
+    x = [0, 0, 1, 1, 1, 2, 3]
+    y = [0, 1, 1, 2, 2, 3, 4]
+    W_xy, _, p_xy = zero_trimmed_u(x, y)
+    W_yx, _, p_yx = zero_trimmed_u(y, x)
+    assert W_xy == pytest.approx(-W_yx)
+    assert p_xy == pytest.approx(p_yx)
+
+
+def test_zero_trimmed_u_matches_mann_whitney_without_zeros():
+    # Without zeros, W is the Mann-Whitney U of y minus n0 * n1 / 2
+    x = np.array([1, 1, 2, 2, 3, 4, 4])
+    y = np.array([1, 2, 2, 3, 3, 4, 5, 5])
+    w_stat, _, _ = zero_trimmed_u(x, y)
+    u_y = stats.mannwhitneyu(y, x).statistic
+    assert w_stat == pytest.approx(u_y - len(x) * len(y) / 2)
